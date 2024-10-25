@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models 
 from modulos.producto.models import Producto
 from modulos.cliente.models import Cliente, TipoDocumento
 
@@ -18,11 +18,14 @@ class Factura(models.Model):
         return f"Factura {self.id_factura} - {self.cliente.nombre_cliente} {self.cliente.apellidos_cliente}"
 
 class DetalleFactura(models.Model):
-    factura = models.ForeignKey(Factura, on_delete=models.CASCADE)
+    factura = models.ForeignKey(Factura, on_delete=models.CASCADE, related_name='detalles')
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
-    precio_unidad_venta = models.DecimalField(max_digits=10, decimal_places=2)
     precio_total_venta = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def save(self, *args, **kwargs):
+        self.precio_total_venta = self.producto.preciounidadventa * self.cantidad
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.producto.nombre_producto} ({self.cantidad})"
