@@ -31,11 +31,17 @@ class Devolucion(models.Model):
         return self.producto.proveedor.apellidos_proveedor if self.producto.proveedor else "Sin apellidos"
     
     def save(self, *args, **kwargs):
-        # Asegúrate de que el producto existe
-        if self.producto:
-            # Restar la cantidad devuelta del producto
-            self.producto.cantidad -= self.cantidad
-            self.producto.save()
+        if self.pk:
+            # Obtener la cantidad anterior antes de actualizar
+            devolucion_previa = Devolucion.objects.get(pk=self.pk)
+            cantidad_previa = devolucion_previa.cantidad
+            # Revertir la cantidad anterior al producto
+            self.producto.cantidad += cantidad_previa
+
+        # Aplicar la nueva cantidad al producto
+        self.producto.cantidad -= self.cantidad
+        self.producto.save()
+
         super().save(*args, **kwargs)
 
     def __str__(self):

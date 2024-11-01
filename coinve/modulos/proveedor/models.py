@@ -12,11 +12,3 @@ class Proveedor(models.Model):
     def __str__(self):
         return self.nombre_proveedor
 
-
-class ProductoServicio(models.Model):
-    id_producto_servicio = models.AutoField(primary_key=True)
-    nom_producto_servicio = models.CharField(max_length=100)
-    proveedores = models.ManyToManyField(Proveedor, related_name='productos')
-
-    def __str__(self):
-        return self.nom_producto_servicio

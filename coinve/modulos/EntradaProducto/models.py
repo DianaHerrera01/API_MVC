@@ -27,8 +27,17 @@ class Entrada(models.Model):
         self.cantidad = int(self.cantidad)
         self.precio_total_compra = Decimal(self.precio_unidad_compra) * self.cantidad
 
-        # Actualizar la cantidad del producto
-        self.producto.cantidad += self.cantidad  # Aumentar la cantidad existente
+        # Obtener la cantidad previa antes de actualizar el producto
+        if self.pk:  # Si la entrada ya existe
+            entrada_previa = Entrada.objects.get(pk=self.pk)
+            cantidad_anterior = entrada_previa.cantidad
+            # Restar la cantidad anterior
+            self.producto.cantidad -= cantidad_anterior
+        else:
+            cantidad_anterior = 0
+
+        # Sumar la cantidad nueva
+        self.producto.cantidad += self.cantidad
         self.producto.preciounidadcompra = self.precio_unidad_compra
         self.producto.save()  # Guarda los cambios en el producto
 
