@@ -5,7 +5,14 @@ from django.contrib.auth.password_validation import validate_password  # importa
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer # importar el serializador de token JWT de DRF-SimpleJWT
 
 class RegistroSerializer(serializers.ModelSerializer):
-    # definir el campo de correo electrónico, validando que sea único y obligatorio
+    username = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())],  # Verificar unicidad del username
+        error_messages={
+            'required': 'El nombre de usuario es obligatorio.',
+            'unique': 'Este nombre de usuario ya está en uso.'
+        }
+    )
     email = serializers.EmailField(
         required=True,
         error_messages={
@@ -32,19 +39,17 @@ class RegistroSerializer(serializers.ModelSerializer):
         fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name')
 
     def validate(self, attrs):
-        user_id = self.context.get('user_id')  # Obtener el ID del usuario de la petición
-
-        # Verificar si el nombre de usuario ya existe
-        if User.objects.filter(username=attrs['username']).exclude(id=user_id).exists():
-            raise serializers.ValidationError({"username": "Este nombre de usuario ya está en uso."})
-
         # Validar que las contraseñas coincidan
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({"password": "Las contraseñas no coinciden."})
-        
+            
         return attrs
 
     def create(self, validated_data):
+        # Remover el campo password2 ya que no es necesario para la creación
+        validated_data.pop('password2')
+        
+        # Crear el usuario
         user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
