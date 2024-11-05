@@ -8,10 +8,8 @@ class RegistroSerializer(serializers.ModelSerializer):
     # definir el campo de correo electrónico, validando que sea único y obligatorio
     email = serializers.EmailField(
         required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())],
         error_messages={
-            'required': 'El correo electrónico es obligatorio.',
-            'unique': 'Este correo electrónico ya está en uso.'
+            'required': 'El correo electrónico es obligatorio.'
         }
     )
     password = serializers.CharField(
@@ -34,13 +32,11 @@ class RegistroSerializer(serializers.ModelSerializer):
         fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name')
 
     def validate(self, attrs):
-        # Verificar si el nombre de usuario ya existe
-        if User.objects.filter(username=attrs['username']).exists():
-            raise serializers.ValidationError({"username": "Este nombre de usuario ya está en uso."})
+        user_id = self.context.get('user_id')  # Obtener el ID del usuario de la petición
 
-        # Verificar si el correo electrónico ya existe
-        if User.objects.filter(email=attrs['email']).exists():
-            raise serializers.ValidationError({"email": "Este correo electrónico ya está en uso."})
+        # Verificar si el nombre de usuario ya existe
+        if User.objects.filter(username=attrs['username']).exclude(id=user_id).exists():
+            raise serializers.ValidationError({"username": "Este nombre de usuario ya está en uso."})
 
         # Validar que las contraseñas coincidan
         if attrs['password'] != attrs['password2']:
@@ -58,6 +54,21 @@ class RegistroSerializer(serializers.ModelSerializer):
         user.set_password(validated_data['password'])
         user.save()
         return user
+    
+    def update(self, instance, validated_data):
+        # Actualizar los campos del usuario
+        instance.username = validated_data.get('username', instance.username)
+        instance.email = validated_data.get('email', instance.email)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+
+        # Si hay una nueva contraseña, establecerla
+        password = validated_data.get('password')
+        if password:
+            instance.set_password(password)
+
+        instance.save()
+        return instance
 
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
