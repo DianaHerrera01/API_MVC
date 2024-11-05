@@ -24,7 +24,7 @@ class DetalleFacturaSerializer(serializers.ModelSerializer):
 
 class FacturaSerializer(serializers.ModelSerializer):
     cliente = serializers.PrimaryKeyRelatedField(queryset=Cliente.objects.all())
-    tipo_documento = serializers.PrimaryKeyRelatedField(queryset=TipoDocumento.objects.all())  # Asegúrate de que este campo esté correctamente definido
+    tipo_documento = serializers.PrimaryKeyRelatedField(queryset=TipoDocumento.objects.all()) 
     detalles = DetalleFacturaSerializer(many=True)
     numero_documento = serializers.CharField(source='cliente.documento_cli', read_only=True)
     

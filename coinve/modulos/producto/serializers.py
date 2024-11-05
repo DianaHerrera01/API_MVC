@@ -16,14 +16,14 @@ class ProductoSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         
-        # Modificar la representación de categoria para mostrar id y nom_categoria
+        # representación de categoria para mostrar id y nom_categoria
         if instance.categoria:
             representation['categoria'] = {
                 "categoriaID": instance.categoria.categoriaID,
                 "nom_categoria": instance.categoria.nom_categoria
             }
         
-        # Modificar la representación de proveedor para mostrar id, nombre y apellido
+        # representación de proveedor para mostrar id, nombre y apellido
         if instance.proveedor:
             representation['proveedor'] = {
                 "id_proveedor": instance.proveedor.id_proveedor,
