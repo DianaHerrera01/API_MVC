@@ -1,6 +1,6 @@
 from rest_framework import generics
-from .models import Proveedor
-from .serializers import ProveedorSerializer
+from .models import Proveedor, ProductoServicio
+from .serializers import ProveedorSerializer,ProductoServicioSerializer
 
 # Proveedor Views
 class ProveedorListCreateAPIView(generics.ListCreateAPIView):
@@ -10,3 +10,12 @@ class ProveedorListCreateAPIView(generics.ListCreateAPIView):
 class ProveedorRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Proveedor.objects.all()
     serializer_class = ProveedorSerializer
+
+# ProductoServicio Views
+class ProductoServicioListCreateAPIView(generics.ListCreateAPIView):
+    queryset = ProductoServicio.objects.all()
+    serializer_class = ProductoServicioSerializer
+
+class ProductoServicioRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ProductoServicio.objects.all()
+    serializer_class = ProductoServicioSerializer
