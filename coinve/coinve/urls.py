@@ -26,5 +26,6 @@ urlpatterns = [
     path('', include('modulos.Devolucion.urls')),
     path('', include('modulos.cliente.urls')),
     path('', include('modulos.factura.urls')),
+    path('', include('modulos.notas.urls')),
     path('', include('modulos.usuarios.urls')),
 ]

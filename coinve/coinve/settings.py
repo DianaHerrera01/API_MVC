@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-==rzzu=(x0@w1l#f+7exmf)1gl4g21rrjsean%%(4a924kmh+*
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.43.216', '*']
 
 
 # Application definition
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'modulos.Devolucion',
     'modulos.cliente',
     'modulos.factura',
+    'modulos.notas',
     'modulos.usuarios'
 ]
 
