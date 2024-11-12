@@ -49,12 +49,22 @@ class ProveedorSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         productos_servicios_data = validated_data.pop('productos_servicios', [])
         proveedor = Proveedor.objects.create(**validated_data)
-        proveedor.productos_servicios.set(productos_servicios_data)
+        proveedor.productos_servicios.add(*productos_servicios_data)  # Utilizamos `add` aquí
         return proveedor
 
     def update(self, instance, validated_data):
-        productos_servicios_data = validated_data.pop('productos_servicios', [])
+        productos_servicios_data = validated_data.pop('productos_servicios', None)
         instance = super().update(instance, validated_data)
-        instance.productos_servicios.set(productos_servicios_data)
+
+        if productos_servicios_data is not None:
+            # Primero, elimina los productos no incluidos en la actualización
+            for producto in instance.productos_servicios.all():
+                if producto not in productos_servicios_data:
+                    instance.productos_servicios.remove(producto)
+            # Luego, agrega los nuevos productos
+            for producto in productos_servicios_data:
+                if producto not in instance.productos_servicios.all():
+                    instance.productos_servicios.add(producto)
+
         return instance
     

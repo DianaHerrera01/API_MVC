@@ -1,3 +1,4 @@
+# models.py
 from django.db import models
 
 class Proveedor(models.Model):
@@ -7,7 +8,7 @@ class Proveedor(models.Model):
     correo = models.EmailField(max_length=100)
     direccion = models.CharField(max_length=255)
     telefono = models.CharField(max_length=15)
-
+    productos_servicios = models.ManyToManyField('ProductoServicio', related_name='proveedores', blank=True)
 
     def __str__(self):
         return self.nombre_proveedor
@@ -15,6 +16,6 @@ class Proveedor(models.Model):
 class ProductoServicio(models.Model):
     id_producto_servicio = models.AutoField(primary_key=True)
     nom_producto_serv = models.CharField(max_length=100)
-    proveedor = models.ForeignKey(Proveedor, related_name='productos_servicios', on_delete=models.CASCADE, null=True, blank=True)
+
     def __str__(self):
         return self.nom_producto_serv
