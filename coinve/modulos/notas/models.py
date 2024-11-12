@@ -17,21 +17,8 @@ class ProductoNota(models.Model):
         return f"Nota sin producto asociado - Nota: {self.nota.id_nota}"
 
     def save(self, *args, **kwargs):
-        # Llamar al método save original primero para asegurarnos de que la nota existe
+        # Llamar al método save original
         super(ProductoNota, self).save(*args, **kwargs)
-        
-        if self.producto and self.cantidad:
-            # Lógica para ajustar el stock basado en el tipo de nota
-            if self.nota.tipo_nota.nom_nota.lower() == "nota de credito":
-                # Devolución del producto - aumentar stock
-                self.producto.cantidad += self.cantidad
-                self.producto.save()
-            elif self.nota.tipo_nota.nom_nota.lower() == "nota de debito":
-                # Venta adicional - disminuir stock
-                if self.producto.cantidad < self.cantidad:
-                    raise ValueError("No hay suficiente stock para vender este producto.")
-                self.producto.cantidad -= self.cantidad
-                self.producto.save()
 
 
 class Nota(models.Model):

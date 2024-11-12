@@ -1,8 +1,8 @@
 from django.db import transaction
-from rest_framework.exceptions import ValidationError
 from rest_framework import serializers
 from .models import Nota, TipoNota, ProductoNota
 from modulos.producto.models import Producto
+from decimal import Decimal
 
 class TipoNotaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,36 +50,63 @@ class NotaSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         productos_data = validated_data.pop('productos')  # Obtener los datos de los productos
         nota = Nota.objects.create(**validated_data)  # Crear la instancia de la Nota
-            
-        # Crear los objetos ProductoNota y asociarlos a la nota creada
-        for producto_data in productos_data:
-            ProductoNota.objects.create(nota=nota, **producto_data)
-            
-        # Calcular el valor de la nota
-        nota.valor = nota.calcular_valor()
-        nota.save()
-                
+
+        with transaction.atomic():
+            # Crear los objetos ProductoNota y asociarlos a la nota creada
+            for producto_data in productos_data:
+                producto_nota = ProductoNota.objects.create(nota=nota, **producto_data)
+
+                # Ajustar el stock en el momento de la creación
+                if nota.tipo_nota.nom_nota.lower() == "nota de credito":
+                    producto_nota.producto.cantidad += producto_nota.cantidad
+                    producto_nota.producto.save()
+
+            # Calcular el valor de la nota
+            nota.valor = nota.calcular_valor()
+            nota.save()
+
         return nota
     
-    """
+   
     def update(self, instance, validated_data):
-        # Actualiza la cantidad del producto
-        instance.cantidad = validated_data.get('cantidad', instance.cantidad)
+        productos_data = validated_data.pop('productos', None)
+
+        # Actualiza los campos de la nota
+        instance.factura = validated_data.get('factura', instance.factura)
+        instance.tipo_nota = validated_data.get('tipo_nota', instance.tipo_nota)
+        instance.motivo = validated_data.get('motivo', instance.motivo)
+        instance.valor = validated_data.get('valor', instance.valor)
         instance.save()
 
-        # Después de guardar la instancia de ProductoNota, actualizamos el stock
-        if instance.producto and instance.cantidad:
-            # Ajustamos el stock según el tipo de nota (crédito o débito)
-            if instance.nota.tipo_nota.nom_nota.lower() == "nota de crédito":
-                # Aumentar el stock para la nota de crédito
-                instance.producto.cantidad += instance.cantidad
-            elif instance.nota.tipo_nota.nom_nota.lower() == "nota de débito":
-                # Disminuir el stock para la nota de débito
-                if instance.producto.cantidad < instance.cantidad:
-                    raise ValueError("No hay suficiente stock.")
-                instance.producto.cantidad -= instance.cantidad
-            # Guardamos el cambio en el producto
-            instance.producto.save()
+        if productos_data is not None:
+            # Restauramos las cantidades de los productos de los detalles existentes
+            for producto_nota in instance.productos.all():
+                producto_nota.producto.cantidad += producto_nota.cantidad  # Devuelve la cantidad al inventario
+                producto_nota.producto.save()  # Guarda el producto actualizado
+
+            # Eliminamos los productos anteriores de la nota
+            instance.productos.all().delete()
+
+            total = Decimal('0.00')  # Variable para calcular el nuevo total
+
+            # Procesamos los nuevos productos
+            for producto_data in productos_data:
+                producto = producto_data['producto']
+                cantidad = producto_data['cantidad']
+
+                # Actualiza la cantidad del producto (resta la nueva cantidad vendida)
+                producto.cantidad -= cantidad
+                producto.save()  # Guarda el producto actualizado
+
+                # Recalculamos el valor de la nota sumando el valor de los productos
+                total += producto.preciounidadventa * cantidad
+
+                # Crea el nuevo detalle de la factura
+                ProductoNota.objects.create(nota=instance, producto=producto, cantidad=cantidad)
+
+            # Actualiza el valor de la nota
+            instance.valor = total
+            instance.save()
 
         return instance
-    """
+
