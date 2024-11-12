@@ -12,7 +12,7 @@ urlpatterns = [
     path('tipo-nota/<int:pk>/', TipoNotaRetrieveUpdateDestroyAPIView.as_view(), name='tipo-nota-retrieve-update-destroy'),
 
     # Nota URLs
-    path('nota/', NotaListCreateAPIView.as_view(), name='nota-list-create'),
-    path('nota/<int:pk>/', NotaRetrieveUpdateDestroyAPIView.as_view(), name='nota-retrieve-update-destroy'),
+    path('notas/', NotaListCreateAPIView.as_view(), name='nota-list-create'),
+    path('notas/<int:pk>/', NotaRetrieveUpdateDestroyAPIView.as_view(), name='nota-retrieve-update-destroy'),
 
 ]
