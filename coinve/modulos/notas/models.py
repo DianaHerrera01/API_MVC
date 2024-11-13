@@ -1,5 +1,4 @@
 from django.db import models
-from django.db import transaction
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 from modulos.factura.models import Factura
@@ -30,23 +29,32 @@ class Nota(models.Model):
 
     def __str__(self):
         return f"Nota {self.id_nota} - Factura {self.factura.id_factura}"
-
+    
     def calcular_valor(self):
-        # Si no hay productos, el valor de la nota es el valor manual
+        # Si ya se tiene un valor manual definido, usar ese valor
+        if self.valor > 0:
+            return self.valor  # Si ya se definió un valor manual, devolverlo
+
+        # Si no hay productos asociados, retornar el valor manual
         if not self.productos.exists():
-            return self.valor  # Valor manual
+            return self.valor
 
         # Calcular el valor de la nota sumando el valor de cada producto
         total_valor = sum([producto_nota.producto.preciounidadventa * producto_nota.cantidad for producto_nota 
                            in self.productos.all()])
         return total_valor
 
-# Recibir la señal de post_save para actualizar el valor de la nota
+
 @receiver(post_save, sender=ProductoNota)
 def actualizar_valor_nota(sender, instance, created, **kwargs):
     if created:  # Solo cuando se crea un nuevo ProductoNota
         instance.nota.valor = instance.nota.calcular_valor()
         instance.nota.save()
+    else:
+        # Si la cantidad del producto cambia, también recalcular el valor de la nota
+        instance.nota.valor = instance.nota.calcular_valor()
+        instance.nota.save()
+
 
 class TipoNota(models.Model):
     id_tipo_nota = models.AutoField(primary_key=True)

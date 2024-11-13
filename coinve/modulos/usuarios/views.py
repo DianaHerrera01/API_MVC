@@ -114,7 +114,10 @@ class RegistroView(APIView):
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
-    def post(self, request, *args, **kwargs): # llamar al método post de la clase padre para obtener el token
+    def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
-        response.data['mensaje'] = "Autenticación satisfactoria."  # retornar la respuesta con el token y el mensaje
+        if 'access' in response.data:
+            response.data['mensaje'] = "Autenticación satisfactoria."
+        else:
+            return Response({"error": "Token no encontrado."}, status=status.HTTP_400_BAD_REQUEST)
         return response
