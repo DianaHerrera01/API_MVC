@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import FacturaListCreateAPIView, FacturaRetrieveUpdateDestroyAPIView,  DetalleFacturaListCreateAPIView, DetalleFacturaRetrieveUpdateDestroyAPIView
+from .views import FacturaListCreateAPIView, FacturaRetrieveUpdateDestroyAPIView
 
 
 urlpatterns = [
