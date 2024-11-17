@@ -46,6 +46,49 @@ class TestRegistroView(TestCase):
         print(response.data)  # Imprimir el contenido de la respuesta
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn('unique', response.data['username'][0].code)  
+
+    def test_actualizar_usuario(self):
+        url = reverse('usuario_detalle', kwargs={'pk': self.user.id})  # Cambiado a 'registro_detalle'
+        data = {
+            "username": "usuario_actualizado",
+            "email": "actualizado@example.com",
+            "password": "NewPassword123!",
+            "password2": "NewPassword123!",
+            "first_name": "Usuario",
+            "last_name": "Actualizado"
+        }
+        response = self.client.put(url, data, content_type='application/json')
+        print(response.status_code)
+        print(response.json())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_eliminar_usuario(self):
+        url = reverse('usuario_detalle', kwargs={'pk': self.user.id})  # Cambiado a 'registro_detalle'
+        response = self.client.delete(url)
+        print(response.status_code)
+        
+        # Aseguramos que no intentamos hacer un json() si no hay contenido
+        if response.status_code == status.HTTP_204_NO_CONTENT:
+            print("Respuesta sin contenido")  # Imprimir si la respuesta está vacía
+        else:
+            print(response.json())  # Si hay contenido, mostrarlo
+        
+        # Verificamos que el estado sea 204 No Content
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    
+   
+    def test_listar_usuarios(self):
+        url = reverse('registro')
+        response = self.client.get(url)
+        print(response.status_code)
+        print(response.json())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIsInstance(response.json(), list)  # Salida JSON como lista
+        self.assertGreater(len(response.json()), 0)  # Asegurar que hay usuarios
+
+
+
 class TestLoginView(TestCase):  # nombre de la clase
     def setUp(self):
         self.client = APIClient()
